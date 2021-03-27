@@ -1,17 +1,23 @@
 from abc import ABC, abstractmethod
 import random
-from buildings import UrbanCenter, Barracks, Walls
+from src.buildings import UrbanCenter, Barracks, Walls
+from data.constantes import MAX_POBLACION_COBRELOA, MAX_POBLACION_COMARCA, MAX_POBLACION_DCC
 
 class Civilization(ABC):
-    def __init__(self, person_limit, pa=0, fs=0, c_tech=0, c_stone=0, c_gold, c_wood):
+    def __init__(self, id, person_limit, c_tech=0, c_stone=0, c_gold=0, c_wood=0):
+
+        self.id = id
+
         self.person_limit =  person_limit
 
         self.__soldiers = []
         self.__workers = []
         self.__assistants = []
         self.__walls = []
-        self.__barracks = None
-        self.__urban_center = UrbanCenter()
+        self.__barracks = []
+        self.__urban_center = [UrbanCenter()]
+        self.__dccowork = []
+        self.__technology = []
         
         # Resource points
         self.__c_tech = c_tech
@@ -25,10 +31,8 @@ class Civilization(ABC):
         pass
 
     # Person properties
-
     @property
     def soldiers(self):
-        self.__soldiers.sort(key=lambda s: s.hp, reverse=True)
         return self.__soldiers
     
     @property
@@ -48,6 +52,10 @@ class Civilization(ABC):
     @property
     def urban_center(self):
         return [self.__urban_center]
+    
+    @property
+    def dccowork(self):
+        return self.__dccowork
     
     @property
     def num_assistants(self):
@@ -122,6 +130,10 @@ class Civilization(ABC):
         return sum([soldier.pa for soldier in self.soldiers])
 
     @property
+    def CS(self):
+        return len(self.__soldiers)
+    
+    @property
     @abstractmethod
     def PA(self):
         pass
@@ -131,6 +143,9 @@ class Civilization(ABC):
     def PD(self):
         pass
 
+    @property
+    def PT(self):
+        return self.PA+self.PD+self.CS+self.__c_tech
     # Properties research
     @property
     def IQ(self):
@@ -173,14 +188,20 @@ class Civilization(ABC):
 
     def __repr__(self):
         ret = ""
-        ret += "Gold: {} -> Wood :{} -> Stone: {} \n".format(self.gold, self.wood, self.stone)
-        ret += "Workers: {} -> Soldiers: {} -> Assistants: {}\n".format(self.num_workers, self.num_soldiers, self.num_assistants)
-    
-    
+        ret += "Resources:\n\tGold: {}\n\tWood :{}\n\t Stone: {}\n".format(self.gold, self.wood, self.stone)
+        ret += "Persons:\n\tWorkers: {} -> Soldiers: {} -> Assistants: {}\n".format(self.num_workers, self.num_soldiers, self.num_assistants)
+        ret += f"Buildings:\n\tWalls: {len(self.walls)}\n\tBarracks: {len(self.barracks)}\n\tDCCowork: {len(self.dccowork)}\n" 
+        ret += f"Technology: {len(self.__technology)}"
+        ret += f"Technology Points: {self.__c_tech}"
+        # ret += f"PA: {self.PA}"
+        # ret += f"PD: {self.PD}"
+        # ret += f"PT: {self.PT}"
+        return ret
 
 class DCC(Civilization):
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(person_limit=MAX_POBLACION_DCC,
+                            **kwargs)
 
     @property
     def leader(self):
@@ -197,7 +218,8 @@ class DCC(Civilization):
 class LaComarca(Civilization):
 
     def __init__(self,  **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(person_limit=MAX_POBLACION_COMARCA,
+                            **kwargs)
 
     @property
     def leader(self):
@@ -213,7 +235,8 @@ class LaComarca(Civilization):
 class Cobreloa(Civilization):
     
     def __init__(self,  **kwargs):
-        super().__init__(**kwargs)
+        super().__init__(person_limit=MAX_POBLACION_COBRELOA,
+                            **kwargs)
 
     @property
     def leader(self):

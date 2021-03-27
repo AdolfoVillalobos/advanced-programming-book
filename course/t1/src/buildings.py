@@ -1,4 +1,4 @@
-from person import Worker, Assistant, Soldier
+from src.person import Worker, Assistant, Soldier
 
 class Building:
     def __int__(self, initial_health_points,

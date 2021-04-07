@@ -1,4 +1,4 @@
-# from src.game import Game
+from abc import ABC, abstractmethod
 
 # # 0 - New or Load
 # # 1 .-  If New -> Select Civilziation. Else, load game.
@@ -24,57 +24,64 @@
 # # - Actions from actions.csv are executed.
 
 MENU_OPTIONS_BY_STAGE = {
-    0: {1: "New Game", 2: "Load Game"},
-    1 : {1: "DCC", 2: "La Comarca", 3: "Cobreloa"},
-    2 : {1: "Collect resources", 2: "Create person", 3: "Create building", 4: "End Turn"}
+    "0_begin": {1: "New Game", 2: "Load Game"},
+    "1_civilization_setup" : {1: "DCC", 2: "La Comarca", 3: "Cobreloa"},
+    "2_turn" : {1: "Collect resources", 2: "Create person", 3: "Create building", 4: "End Turn"},
+    "2_turn_a" : {1: "Wood", 2: "Stone", 3: "Gold"}, # Collect Resource
+    "2_turn_a_numerical" : {"": ""},
+    "2_turn_b" : {1: "Worker", 2: "Assistant", 3: "Soldier"}, # Create Person
+    "2_turn_c" : {1: "Wall", 2: "Assistant", 3: "Soldier"}, # Create Building
+    "numerical_input" : {"x": "Type it!"}
     }
 
 DISPLAY_OPTIONS_BY_STAGE = {
-    0 : "Select an Option: \n\n",
-    1: "Select a Civilization:\n",
-    2: "Your turn. Choose an action: \n",
+    "0_begin": "Select an Option: \n\n",
+    "1_civilization_setup": "Select a Civilization:\n",
+    "2_turn": "Your turn. Choose an action: \n",
+    "2_turn_a" : "Select a resource to collect: \n",
+    "2_turn_a_numerical" : "Type-in: \n",
+    "2_turn_b" : "Select a person to create: \n",
+    "2_turn_c" : "Select a building o build: \n",
     3: "Now your opponents are playing... \n"
 }
 
-class Menu:
+class Menu(ABC):
 
-    def __init__(self, initial_stage = 0):
-        self.stage = initial_stage
+    def __init__(self, default_options=MENU_OPTIONS_BY_STAGE, 
+                        default_messages=DISPLAY_OPTIONS_BY_STAGE,
+                        ):
 
-    @property
-    def stage(self):
-        return self.__stage
+        self.default_options = default_options
+        self.default_messages = default_messages
 
     @property
     def menu_options(self):
-        return MENU_OPTIONS_BY_STAGE[self.stage]
+        return self.default_options[self.stage]
     
     @property
     def display_message(self):
-        return DISPLAY_OPTIONS_BY_STAGE[self.stage]
+        return self.default_messages[self.stage]
     
     @property
-    def user_input(self):
-        return self.__user_input
-
-    # Setters
-    @stage.setter
-    def stage(self, value):
-        self.__stage = value
-
-    @user_input.setter
-    def user_input(self, value):
+    def user_selection(self):
+        return self.__user_selection
+    
+    @user_selection.setter
+    def user_selection(self, value):
         if not value.isnumeric(): raise Exception("User Input Invalid -> Must be an int.")
         value = int(value)
-        if not value in self.menu_options: raise Exception("User Input Invalid -> Try Again.")
-        self.__user_input = value
+        if not (value in self.menu_options): raise Exception("User Input Invalid -> Try Again.")
+        self.__user_selection = value
 
-    def show_options(self):
+    def __repr__(self):
         out = ""
         out += self.display_message
         for k, v in self.menu_options.items():
-            out += f"\t [{k}] {v}\n"
-        print(out)
+            if isinstance(k, range):
+                out += f"\t {v}: [{max(k)}] \n"
+            else:
+                out += f"\t [{k}] {v}\n"
+        return out
 
     def get_user_input(self):
         valid_input = False
@@ -85,104 +92,18 @@ class Menu:
             except Exception as e:
                 print(e)
 
+class NewGameMenu(Menu):
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
-# class Menu:
-#     def __init__(self):
-#         self.game = Game()
-#         self.__user_input = None
-#         self.__options = None
+class CollectResourceMenu(Menu):
 
-#         print("Welcome to the DCCivilization Game!")
-
-#         # Initiate the game
-
-#         self.stage = 0
-#         self.display_message = "Select an Option:\n"
-#         self.menu_options = {1: "New Game", 2: "Load Game"}
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
 
-#     @property
-#     def user_input(self):
-#         return self.__user_input
-
-#     @property
-#     def stage(self):
-#         return self.__stage
     
-#     @property
-#     def menu_options(self):
-#         return self.__menu_options
-
-#     @user_input.setter
-#     def user_input(self, value):
-#         if not value.isnumeric(): raise Exception("User Input Invalid -> Must be an int.")
-#         value = int(value)
-#         if not value in self.menu_options: raise Exception("User Input Invalid -> Try Again.")
-#         self.__user_input = value
-
-#     @menu_options.setter
-#     def menu_options(self, value):
-#         if not isinstance(value, dict): raise Exception("Options must be Dict.")
-#         self.__menu_options = value
-
-#     @stage.setter
-#     def stage(self, value):
-#         self.__stage = value
-
-#     def update_menu(self):
-#         if self.stage == 0:
-#             self.display_message = "Select an Option:\n"
-#             self.menu_options = {1: "New Game", 2: "Load Game"}
-#         elif self.stage == 1:
-#             self.display_message = "Select a Civilization: \n"
-#             self.menu_options = {1: "DCC", 2: "La Comarca", 3: "Cobreloa"}
-
-#         elif self.stage == 2:
-#             self.display_message = "Your Turn!: \n"
-#             self.menu_options = {1: "Collect resources", 
-#                                 2: "Create person",
-#                                 3: "Create building",
-#                                 4: "End Turn"}
-
-#     def get_user_input(self):
-#         valid_input = False
-#         while not valid_input:
-#             try:
-#                 self.user_input = input("-> ")
-#                 valid_input = True
-#             except Exception as e:
-#                 print(e)
-
-#     def execute_user_input(self):
-#         print(f"You have selected option:  {self.menu_options[self.user_input]}\n")
-#         if self.stage == 0:
-#             if self.user_input == 1:
-#                 self.stage = 1
-#         elif self.stage == 1:
-#             for _id, civ_name in self.menu_options.items():
-#                 civ = self.game.create_civilization(civ_name, id=_id)
-#                 if _id == self.user_input:
-#                     self.game.add_player(civ)
-#                 else:
-#                     self.game.add_opponent(civ)
-#             self.stage = 2
-#         elif self.stage == 2:
-            
-
-#         self.update_menu()
-
-
-#     def show_game(self):
-#         print(self.game.player)
-
-#     def __repr__(self):
-#         out = ""
-#         out += self.display_message
-#         for k, v in self.menu_options.items():
-#             out += f"\t [{k}] {v}\n"
-#         return out
-
-
 

@@ -186,6 +186,15 @@ class Civilization(ABC):
     def investigation(self):
         self.__c_tech += self.PT
 
+    def create_person(self):
+        pass
+
+    def create_building(self):
+        pass
+
+    def collect_resources(self):
+        pass
+
     def __repr__(self):
         ret = ""
         ret += "Resources:\n\tGold: {}\n\tWood :{}\n\t Stone: {}\n".format(self.gold, self.wood, self.stone)
